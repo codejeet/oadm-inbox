@@ -7,7 +7,7 @@ import { getJson, postJson } from './http.js';
 
 const program = new Command();
 
-program.name('oadm').description('OADM Inbox CLI').version('0.0.1');
+program.name('oadm').description('OADM Inbox CLI').version('0.0.2');
 
 program
   .option('--api <url>', 'API base URL (or set OADM_API_URL)', '')
