@@ -1,6 +1,6 @@
-export async function postJson<T>(url: string, body: any, token?: string): Promise<T> {
+export async function postJson<T>(url: string, body: any, token?: string, method = 'POST'): Promise<T> {
   const r = await fetch(url, {
-    method: 'POST',
+    method,
     headers: {
       'content-type': 'application/json',
       ...(token ? { authorization: `Bearer ${token}` } : {}),

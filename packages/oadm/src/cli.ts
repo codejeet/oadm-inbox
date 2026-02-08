@@ -26,7 +26,11 @@ program
   .requiredOption('--password <password>')
   .action(async (opts) => {
     const cfg = readConfig();
-    await postJson(`${cfg.apiUrl}/v1/register`, { name: opts.name, password: opts.password, inviteCode: process.env.OADM_INVITE_CODE });
+    await postJson(`${cfg.apiUrl}/v1/register`, {
+      name: opts.name,
+      password: opts.password,
+      inviteCode: process.env.OADM_INVITE_CODE,
+    });
     console.log(chalk.green('✓ registered'));
     console.log('Next: oadm login --name <name> --password <pw>');
   });
@@ -37,7 +41,10 @@ program
   .requiredOption('--password <password>')
   .action(async (opts) => {
     const cfg = readConfig();
-    const data = await postJson<{ token: string }>(`${cfg.apiUrl}/v1/login`, { name: opts.name, password: opts.password });
+    const data = await postJson<{ token: string }>(`${cfg.apiUrl}/v1/login`, {
+      name: opts.name,
+      password: opts.password,
+    });
     cfg.name = opts.name;
     cfg.token = data.token;
     writeConfig(cfg);
@@ -51,7 +58,11 @@ program
   .action(async (opts) => {
     const cfg = readConfig();
     if (!cfg.token) throw new Error('not_logged_in');
-    const data = await postJson<{ id: string }>(`${cfg.apiUrl}/v1/messages/send`, { toName: opts.to, text: opts.text }, cfg.token);
+    const data = await postJson<{ id: string }>(
+      `${cfg.apiUrl}/v1/messages/send`,
+      { toName: opts.to, text: opts.text },
+      cfg.token
+    );
     console.log(chalk.green('✓ sent'), data.id);
   });
 
@@ -93,6 +104,49 @@ program
     if (!cfg.token) throw new Error('not_logged_in');
     await postJson(`${cfg.apiUrl}/v1/messages/ack/${msgId}`, {}, cfg.token);
     console.log(chalk.green('✓ acked'), msgId);
+  });
+
+program
+  .command('webhook:create')
+  .requiredOption('--url <url>')
+  .option('--secret <secret>')
+  .action(async (opts) => {
+    const cfg = readConfig();
+    if (!cfg.token) throw new Error('not_logged_in');
+    const data = await postJson<{ webhook: any; secret: string }>(
+      `${cfg.apiUrl}/v1/webhooks`,
+      { url: opts.url, secret: opts.secret },
+      cfg.token
+    );
+    console.log(chalk.green('✓ webhook created'), data.webhook.id);
+    console.log('secret:', data.secret);
+  });
+
+program
+  .command('webhook:list')
+  .option('--json', 'JSON output', false)
+  .action(async (opts) => {
+    const cfg = readConfig();
+    if (!cfg.token) throw new Error('not_logged_in');
+    const data = await getJson<{ webhooks: any[] }>(`${cfg.apiUrl}/v1/webhooks`, cfg.token);
+    if (opts.json) {
+      console.log(JSON.stringify(data, null, 2));
+      return;
+    }
+    for (const hook of data.webhooks) {
+      console.log(`${hook.id}  ${hook.url}  enabled:${hook.enabled}`);
+    }
+    if (!data.webhooks.length) console.log('(empty)');
+  });
+
+program
+  .command('webhook:delete')
+  .argument('<webhookId>')
+  .action(async (webhookId) => {
+    const cfg = readConfig();
+    if (!cfg.token) throw new Error('not_logged_in');
+    await postJson(`${cfg.apiUrl}/v1/webhooks/${webhookId}`, {}, cfg.token, 'DELETE');
+    console.log(chalk.green('✓ webhook deleted'), webhookId);
   });
 
 program.parseAsync(process.argv).catch((e) => {
