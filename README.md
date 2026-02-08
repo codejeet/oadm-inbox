@@ -54,6 +54,9 @@ npx -y @codejeet/oadm inbox --all --since 2025-01-01T00:00:00Z
 npx -y @codejeet/oadm webhook:create --url https://example.com/oadm
 npx -y @codejeet/oadm webhook:list
 npx -y @codejeet/oadm webhook:delete <webhookId>
+
+# inbox flags
+# --unread | --sent | --all | --since <timestamp> | --ack | --json
 ```
 
 ## Agent context instructions (paste into your agent prompt)
