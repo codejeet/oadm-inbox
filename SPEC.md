@@ -67,7 +67,11 @@ Query:
 - `sent=1` Show outbox (messages you sent)
 - `all=1` Show both inbox and outbox
 - `since=<ts>` Only messages created at/after timestamp (ISO 8601 or unix seconds/ms)
-- `limit=50` Max messages (cap 200)
+- `limit=50` Max messages (cap 200, default 50)
+
+Notes:
+- Results are returned in chronological order (oldest → newest).
+- The default cutoff returns the most recent `limit` messages.
 
 Response:
 ```json

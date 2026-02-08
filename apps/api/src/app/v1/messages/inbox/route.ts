@@ -36,7 +36,12 @@ export async function GET(req: Request) {
   if (url.searchParams.has('since') && !since) {
     return Response.json({ error: 'invalid_since' }, { status: 400 });
   }
-  const limit = Math.min(Number(url.searchParams.get('limit') ?? '50') || 50, 200);
+  const rawLimit = url.searchParams.get('limit');
+  const parsedLimit = Number(rawLimit ?? '50');
+  const limit = Math.min(
+    Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.floor(parsedLimit) : 50,
+    200
+  );
 
   const d = db();
   const inboxClause = unread
@@ -59,11 +64,12 @@ export async function GET(req: Request) {
     .from(messages)
     .leftJoin(users, eq(messages.toUserId, users.id))
     .where(whereClause)
-    .orderBy(desc(messages.createdAt))
+    .orderBy(desc(messages.createdAt), desc(messages.id))
     .limit(limit);
+  const ordered = rows.slice().reverse();
 
   return Response.json({
-    messages: rows.map((r) => ({
+    messages: ordered.map((r) => ({
       id: r.id,
       text: r.text,
       createdAt: r.createdAt,

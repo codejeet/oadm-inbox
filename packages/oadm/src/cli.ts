@@ -72,6 +72,7 @@ program
   .option('--sent', 'Show sent messages (outbox)', false)
   .option('--all', 'Show both received and sent', false)
   .option('--since <timestamp>', 'Only messages since timestamp (ISO 8601 or unix)', '')
+  .option('--limit <count>', 'Max messages to return (cap 200)', '')
   .option('--json', 'JSON output', false)
   .option('--ack', 'Ack returned messages', false)
   .action(async (opts) => {
@@ -83,6 +84,7 @@ program
     if (opts.sent) q.set('sent', '1');
     if (opts.all) q.set('all', '1');
     if (opts.since) q.set('since', opts.since);
+    if (opts.limit) q.set('limit', String(opts.limit));
     const data = await getJson<{ messages: any[] }>(`${cfg.apiUrl}/v1/messages/inbox?${q.toString()}`, cfg.token);
 
     if (opts.json) {
