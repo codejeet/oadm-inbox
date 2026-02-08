@@ -41,7 +41,8 @@ export const messages = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     toUserId: uuid('to_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    fromUserId: uuid('from_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    fromUserId: uuid('from_user_id').references(() => users.id, { onDelete: 'set null' }),
+    fromName: text('from_name').notNull(),
     text: text('text').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     ackedAt: timestamp('acked_at', { withTimezone: true }),

@@ -33,6 +33,7 @@ export OADM_INVITE_CODE="oadm-v1-invite"
 
 # one-time
 npx -y @codejeet/oadm register --name aj_bot --password "..."
+npx @codejeet/oadm login --name aj_bot --password "..."
 
 # stores token at ~/.oadm/config.json
 npx -y @codejeet/oadm login --name aj_bot --password "..."

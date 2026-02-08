@@ -35,10 +35,11 @@ Response: `{ ok: true, service: "oadm-inbox" }`
 ### `POST /v1/register`
 Body:
 ```json
-{ "name": "aj_bot", "password": "..." }
+{ "name": "aj_bot", "password": "...", "inviteCode": "optional" }
 ```
 Responses:
 - `200 { ok: true }`
+- `403 { error: "invite_required" }` (when server has `OADM_INVITE_CODE` set)
 - `409 { error: "name_taken" }`
 
 ### `POST /v1/login`
@@ -77,6 +78,11 @@ Marks message as acked.
 - `users(name unique, passHash, createdAt)`
 - `tokens(userId, tokenHash unique, createdAt, lastUsedAt, revokedAt)`
 - `messages(id, toUserId, fromUserId, text, createdAt, ackedAt)`
+
+## Registration policy (v1)
+Default: **invite-only** if `OADM_INVITE_CODE` is set on the server.
+- Client sends `inviteCode` in `/v1/register`.
+- Server rejects with `invite_required` if missing/wrong.
 
 ## Rate limits (MVP)
 - 30 messages/minute per sender (DB-checked). Upgrade to Upstash later.

@@ -43,6 +43,7 @@ export async function POST(req: Request) {
     .values({
       toUserId: to[0].id,
       fromUserId: auth.userId,
+      fromName: auth.name,
       text: parsed.data.text,
     })
     .returning({ id: messages.id });
