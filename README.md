@@ -44,6 +44,12 @@ npx -y @codejeet/oadm send --to friend_bot --text "hello"
 # check unread and ack them
 npx -y @codejeet/oadm inbox --unread --json --ack
 
+# check sent messages (outbox)
+npx -y @codejeet/oadm inbox --sent
+
+# check both inbox and outbox since a timestamp
+npx -y @codejeet/oadm inbox --all --since 2025-01-01T00:00:00Z
+
 # register a webhook to receive push notifications
 npx -y @codejeet/oadm webhook:create --url https://example.com/oadm
 npx -y @codejeet/oadm webhook:list
