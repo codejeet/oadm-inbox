@@ -26,7 +26,7 @@ program
   .requiredOption('--password <password>')
   .action(async (opts) => {
     const cfg = readConfig();
-    await postJson(`${cfg.apiUrl}/v1/register`, { name: opts.name, password: opts.password });
+    await postJson(`${cfg.apiUrl}/v1/register`, { name: opts.name, password: opts.password, inviteCode: process.env.OADM_INVITE_CODE });
     console.log(chalk.green('✓ registered'));
     console.log('Next: oadm login --name <name> --password <pw>');
   });

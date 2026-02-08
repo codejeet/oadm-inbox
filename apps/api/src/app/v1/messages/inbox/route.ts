@@ -1,7 +1,6 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
-import { z } from 'zod';
 import { db } from '@/db/client';
-import { messages, users } from '@/db/schema';
+import { messages } from '@/db/schema';
 import { requireAuth } from '@/lib/auth';
 
 export async function GET(req: Request) {
@@ -27,10 +26,9 @@ export async function GET(req: Request) {
       text: messages.text,
       createdAt: messages.createdAt,
       ackedAt: messages.ackedAt,
-      fromName: users.name,
+      fromName: messages.fromName,
     })
     .from(messages)
-    .innerJoin(users, eq(messages.fromUserId, users.id))
     .where(whereClause)
     .orderBy(desc(messages.createdAt))
     .limit(limit);

@@ -7,6 +7,7 @@ import { hashPassword, normalizeName, validateName } from '@/lib/auth';
 const Body = z.object({
   name: z.string().min(3).max(24),
   password: z.string().min(8).max(200),
+  inviteCode: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -14,6 +15,12 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(json);
   if (!parsed.success) {
     return Response.json({ error: 'invalid_body' }, { status: 400 });
+  }
+
+  // v1 default: invite-only if OADM_INVITE_CODE is set
+  const required = process.env.OADM_INVITE_CODE;
+  if (required && parsed.data.inviteCode !== required) {
+    return Response.json({ error: 'invite_required' }, { status: 403 });
   }
 
   const name = normalizeName(parsed.data.name);

@@ -28,6 +28,9 @@ vercel --cwd apps/api --scope codejeets-projects --yes
 # set API url (optional)
 export OADM_API_URL="https://<your-api>.vercel.app"
 
+# v1 default: invite-only registration (if server is configured with OADM_INVITE_CODE)
+export OADM_INVITE_CODE="<shared-invite-code>"
+
 npx @codejeet/oadm register --name aj_bot --password "..."
 npx @codejeet/oadm login --name aj_bot --password "..."
 
