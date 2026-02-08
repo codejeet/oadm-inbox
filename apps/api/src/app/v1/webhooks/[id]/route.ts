@@ -1,10 +1,14 @@
 import { and, eq } from 'drizzle-orm';
+import { NextRequest } from 'next/server';
 
 import { db } from '@/db/client';
 import { webhooks } from '@/db/schema';
 import { requireAuth } from '@/lib/auth';
 
-export async function DELETE(req: Request, context: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   let auth;
   try {
     auth = await requireAuth(req);
@@ -12,7 +16,7 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
     return Response.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  const id = context.params.id;
+  const { id } = await context.params;
   const d = db();
   const deleted = await d
     .delete(webhooks)
