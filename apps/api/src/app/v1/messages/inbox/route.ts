@@ -32,6 +32,7 @@ export async function GET(req: Request) {
   const unread = url.searchParams.get('unread') === '1';
   const sent = url.searchParams.get('sent') === '1';
   const all = url.searchParams.get('all') === '1';
+  const received = url.searchParams.get('received') === '1';
   const since = parseSinceParam(url.searchParams.get('since'));
   if (url.searchParams.has('since') && !since) {
     return Response.json({ error: 'invalid_since' }, { status: 400 });
@@ -48,7 +49,15 @@ export async function GET(req: Request) {
     ? and(eq(messages.toUserId, auth.userId), isNull(messages.ackedAt))
     : eq(messages.toUserId, auth.userId);
   const outboxClause = eq(messages.fromUserId, auth.userId);
-  const baseClause = all ? or(inboxClause, outboxClause) : sent ? outboxClause : inboxClause;
+  const baseClause = all
+    ? or(inboxClause, outboxClause)
+    : sent
+      ? outboxClause
+      : received
+        ? inboxClause
+        : unread
+          ? inboxClause
+          : or(inboxClause, outboxClause);
   const whereClause = since ? and(baseClause, gte(messages.createdAt, since)) : baseClause;
 
   const rows = await d

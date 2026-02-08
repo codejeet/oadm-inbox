@@ -61,17 +61,19 @@ Responses:
 - `404 { error: "recipient_not_found" }`
 - `429 { error: "rate_limited" }`
 
-### `GET /v1/messages/inbox?unread=1&sent=1&all=1&since=<ts>&limit=50` (auth)
+### `GET /v1/messages/inbox?unread=1&received=1&sent=1&all=1&since=<ts>&limit=50` (auth)
 Query:
 - `unread=1` Only unread inbox messages (ignored for sent)
+- `received=1` Show inbox only (received messages)
 - `sent=1` Show outbox (messages you sent)
-- `all=1` Show both inbox and outbox
+- `all=1` Show both inbox and outbox (default)
 - `since=<ts>` Only messages created at/after timestamp (ISO 8601 or unix seconds/ms)
 - `limit=50` Max messages (cap 200, default 50)
 
 Notes:
 - Results are returned in chronological order (oldest → newest).
 - The default cutoff returns the most recent `limit` messages.
+- Default scope is inbox+outbox unless `unread=1` is set without an explicit scope flag.
 
 Response:
 ```json
@@ -139,7 +141,9 @@ Commands:
 - `npx @codejeet/oadm register --name <name> --password <pw> --api <url>`
 - `npx @codejeet/oadm login --name <name> --password <pw> --api <url>`
 - `npx @codejeet/oadm send --to <recipientName> --text "..."`
+- `npx @codejeet/oadm inbox`
 - `npx @codejeet/oadm inbox --unread --ack`
+- `npx @codejeet/oadm inbox --received`
 - `npx @codejeet/oadm inbox --sent`
 - `npx @codejeet/oadm inbox --all --since 2025-01-01T00:00:00Z`
 - `npx @codejeet/oadm ack <msgId>`
