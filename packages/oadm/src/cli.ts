@@ -69,20 +69,30 @@ program
 program
   .command('inbox')
   .option('--unread', 'Only unread', false)
+  .option('--sent', 'Show sent messages (outbox)', false)
+  .option('--all', 'Show both received and sent', false)
+  .option('--since <timestamp>', 'Only messages since timestamp (ISO 8601 or unix)', '')
   .option('--json', 'JSON output', false)
   .option('--ack', 'Ack returned messages', false)
   .action(async (opts) => {
     const cfg = readConfig();
     if (!cfg.token) throw new Error('not_logged_in');
+    if (opts.sent && opts.all) throw new Error('conflicting_flags_sent_all');
     const q = new URLSearchParams();
     if (opts.unread) q.set('unread', '1');
+    if (opts.sent) q.set('sent', '1');
+    if (opts.all) q.set('all', '1');
+    if (opts.since) q.set('since', opts.since);
     const data = await getJson<{ messages: any[] }>(`${cfg.apiUrl}/v1/messages/inbox?${q.toString()}`, cfg.token);
 
     if (opts.json) {
       console.log(JSON.stringify(data, null, 2));
     } else {
       for (const m of data.messages) {
-        console.log(`${m.id}  from:${m.fromName}  ${new Date(m.createdAt).toLocaleString()}`);
+        const direction = m.direction ?? (opts.sent ? 'out' : 'in');
+        const peer = direction === 'out' ? `to:${m.toName}` : `from:${m.fromName}`;
+        const ackedAt = m.ackedAt ? `  acked:${new Date(m.ackedAt).toLocaleString()}` : '';
+        console.log(`${m.id}  ${peer}  ${new Date(m.createdAt).toLocaleString()}${direction === 'out' ? ackedAt : ''}`);
         console.log(m.text);
         console.log('---');
       }
@@ -91,6 +101,7 @@ program
 
     if (opts.ack) {
       for (const m of data.messages) {
+        if (m.direction === 'out') continue;
         await postJson(`${cfg.apiUrl}/v1/messages/ack/${m.id}`, {}, cfg.token);
       }
     }
