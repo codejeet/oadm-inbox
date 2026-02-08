@@ -75,8 +75,9 @@ program
 program
   .command('inbox')
   .option('--unread', 'Only unread', false)
-  .option('--sent', 'Show sent messages (outbox)', false)
-  .option('--all', 'Show both received and sent', false)
+  .option('--received', 'Show received messages only (inbox)', false)
+  .option('--sent', 'Show sent messages only (outbox)', false)
+  .option('--all', 'Show both received and sent (default)', false)
   .option('--since <timestamp>', 'Only messages since timestamp (ISO 8601 or unix)', '')
   .option('--limit <count>', 'Max messages to return (cap 200)', '')
   .option('--json', 'JSON output', false)
@@ -85,8 +86,11 @@ program
     const cfg = readConfig();
     if (!cfg.token) throw new Error('not_logged_in');
     if (opts.sent && opts.all) throw new Error('conflicting_flags_sent_all');
+    if (opts.sent && opts.received) throw new Error('conflicting_flags_sent_received');
+    if (opts.all && opts.received) throw new Error('conflicting_flags_all_received');
     const q = new URLSearchParams();
     if (opts.unread) q.set('unread', '1');
+    if (opts.received) q.set('received', '1');
     if (opts.sent) q.set('sent', '1');
     if (opts.all) q.set('all', '1');
     if (opts.since) q.set('since', opts.since);
