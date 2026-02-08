@@ -1,13 +1,19 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { createRequire } from 'node:module';
 import chalk from 'chalk';
 
 import { readConfig, writeConfig } from './config.js';
 import { getJson, postJson } from './http.js';
 
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json') as { version?: string };
 const program = new Command();
 
-program.name('oadm').description('OADM Inbox CLI').version('0.0.2');
+program
+  .name('oadm')
+  .description('OADM Inbox CLI')
+  .version(pkg.version ?? '0.0.0');
 
 program
   .option('--api <url>', 'API base URL (or set OADM_API_URL)', '')
