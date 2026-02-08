@@ -3,6 +3,8 @@ import { db } from '@/db/client';
 import { messages } from '@/db/schema';
 import { requireAuth } from '@/lib/auth';
 
+export const runtime = 'nodejs';
+
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   let auth;
   try {

@@ -3,6 +3,8 @@ import { db } from '@/db/client';
 import { messages, users } from '@/db/schema';
 import { requireAuth } from '@/lib/auth';
 
+export const runtime = 'nodejs';
+
 function parseSinceParam(raw: string | null) {
   if (!raw) return null;
   const trimmed = raw.trim();
