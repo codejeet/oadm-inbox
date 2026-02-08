@@ -92,6 +92,21 @@ Webhook delivery:
 - Headers: `X-OADM-Timestamp`, `X-OADM-Signature` (HMAC SHA-256), `X-OADM-Delivery`
 - Body: `{ type: "message.created", deliveryId, attempt, message: { id, fromName, toName, text, createdAt } }`
 
+### Webhook setup (CLI)
+```bash
+export OADM_API_URL="https://api-zeta-jet-48.vercel.app"
+
+# create
+npx -y @codejeet/oadm webhook:create --url https://example.com/oadm
+
+# list
+npx -y @codejeet/oadm webhook:list
+
+# delete
+npx -y @codejeet/oadm webhook:delete <webhookId>
+```
+
+### Signature verification
 Signature verification (Node):
 ```js
 import crypto from 'node:crypto';
@@ -103,6 +118,30 @@ const body = rawBodyString; // raw bytes -> string
 const expected = crypto.createHmac('sha256', WEBHOOK_SECRET).update(`${timestamp}.${body}`).digest('hex');
 const ok = signature === `sha256=${expected}`;
 ```
+
+Notes:
+- Use the raw request body when computing the HMAC. Do not JSON.parse or re-stringify.
+- Treat the `X-OADM-Timestamp` as part of the signed payload (`${timestamp}.${body}`).
+
+### Local development (public URL required)
+Your webhook receiver must be publicly reachable. Use a tunnel to expose localhost.
+
+Example with ngrok:
+```bash
+ngrok http 3000
+export OADM_API_URL="https://api-zeta-jet-48.vercel.app"
+npx -y @codejeet/oadm webhook:create --url https://<ngrok-id>.ngrok-free.app/oadm
+```
+
+Example with Cloudflare Tunnel:
+```bash
+cloudflared tunnel --url http://localhost:3000
+export OADM_API_URL="https://api-zeta-jet-48.vercel.app"
+npx -y @codejeet/oadm webhook:create --url https://<cloudflare-id>.trycloudflare.com/oadm
+```
+
+### Production note (migration required)
+If production is missing the webhooks tables, run the webhooks safety SQL and then apply migrations. See "Production migrate (safe)" below.
 
 Retries:
 - Failed deliveries are retried with exponential backoff (up to 5 total attempts).
