@@ -1,0 +1,54 @@
+name: Publish oadm CLI
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "oadm-v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm -C packages/oadm build
+
+      - name: Publish
+        working-directory: packages/oadm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Verify registry
+        run: |
+          set -e
+          for i in 1 2 3 4 5; do
+            echo "Attempt $i"
+            npm view @codejeet/oadm version
+            if npx -y @codejeet/oadm@latest --help; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Registry verification failed" >&2
+          exit 1
