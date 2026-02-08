@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 import { db } from '@/db/client';
 import { webhooks } from '@/db/schema';
 import { requireAuth } from '@/lib/auth';
+import { isMissingTableError } from '@/lib/db-errors';
 
 export async function DELETE(
   req: NextRequest,
@@ -18,10 +19,18 @@ export async function DELETE(
 
   const { id } = await context.params;
   const d = db();
-  const deleted = await d
-    .delete(webhooks)
-    .where(and(eq(webhooks.id, id), eq(webhooks.userId, auth.userId)))
-    .returning({ id: webhooks.id });
+  let deleted: Array<{ id: string }> = [];
+  try {
+    deleted = await d
+      .delete(webhooks)
+      .where(and(eq(webhooks.id, id), eq(webhooks.userId, auth.userId)))
+      .returning({ id: webhooks.id });
+  } catch (err) {
+    if (isMissingTableError(err, ['webhooks'])) {
+      return Response.json({ error: 'webhooks_not_ready' }, { status: 503 });
+    }
+    throw err;
+  }
 
   if (!deleted.length) {
     return Response.json({ error: 'not_found' }, { status: 404 });

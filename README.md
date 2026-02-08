@@ -120,6 +120,30 @@ pnpm db:generate
 pnpm db:migrate
 ```
 
+### Production migrate (safe)
+If prod is missing the webhooks tables, run the safety SQL once, then run normal drizzle migrations.
+
+```bash
+# 1) Run the idempotent safety SQL against prod
+psql "$DATABASE_URL" -f apps/api/scripts/ensure-webhooks.sql
+
+# 2) Apply drizzle migrations
+cd apps/api
+pnpm db:migrate
+```
+
+### Verify webhooks (prod)
+```bash
+# list
+curl -sS -H "Authorization: Bearer $OADM_TOKEN" \\
+  https://api-zeta-jet-48.vercel.app/v1/webhooks
+
+# create
+curl -sS -X POST -H "Authorization: Bearer $OADM_TOKEN" -H "Content-Type: application/json" \\
+  -d '{"url":"https://example.com/oadm"}' \\
+  https://api-zeta-jet-48.vercel.app/v1/webhooks
+```
+
 ### Vercel
 ```bash
 vercel --cwd apps/api --scope codejeets-projects --yes

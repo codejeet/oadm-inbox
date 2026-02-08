@@ -5,6 +5,7 @@ import { db } from '@/db/client';
 import { webhooks } from '@/db/schema';
 import { createWebhookSecret, isValidWebhookUrl } from '@/lib/webhooks';
 import { requireAuth } from '@/lib/auth';
+import { isMissingTableError } from '@/lib/db-errors';
 
 const Body = z.object({
   url: z.string().min(8).max(2048),
@@ -21,16 +22,30 @@ export async function GET(req: Request) {
   }
 
   const d = db();
-  const rows = await d
-    .select({
-      id: webhooks.id,
-      url: webhooks.url,
-      enabled: webhooks.enabled,
-      createdAt: webhooks.createdAt,
-      lastDeliveredAt: webhooks.lastDeliveredAt,
-    })
-    .from(webhooks)
-    .where(eq(webhooks.userId, auth.userId));
+  let rows: Array<{
+    id: string;
+    url: string;
+    enabled: boolean;
+    createdAt: Date;
+    lastDeliveredAt: Date | null;
+  }> = [];
+  try {
+    rows = await d
+      .select({
+        id: webhooks.id,
+        url: webhooks.url,
+        enabled: webhooks.enabled,
+        createdAt: webhooks.createdAt,
+        lastDeliveredAt: webhooks.lastDeliveredAt,
+      })
+      .from(webhooks)
+      .where(eq(webhooks.userId, auth.userId));
+  } catch (err) {
+    if (isMissingTableError(err, ['webhooks'])) {
+      return Response.json({ error: 'webhooks_not_ready' }, { status: 503 });
+    }
+    throw err;
+  }
 
   return Response.json({ webhooks: rows });
 }
@@ -78,6 +93,9 @@ export async function POST(req: Request) {
       secret,
     });
   } catch (err: any) {
+    if (isMissingTableError(err, ['webhooks'])) {
+      return Response.json({ error: 'webhooks_not_ready' }, { status: 503 });
+    }
     const message = err?.message ?? '';
     if (message.includes('webhooks_user_url_uq')) {
       return Response.json({ error: 'webhook_exists' }, { status: 409 });
