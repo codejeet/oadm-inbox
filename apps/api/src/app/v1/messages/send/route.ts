@@ -6,6 +6,8 @@ import { normalizeName, requireAuth } from '@/lib/auth';
 import { assertSendRateLimit, getIp } from '@/lib/ratelimit';
 import { deliverMessageWebhooks } from '@/lib/webhooks';
 
+export const runtime = 'nodejs';
+
 const Body = z.object({
   toName: z.string().min(3).max(24),
   text: z.string().min(1).max(4000),

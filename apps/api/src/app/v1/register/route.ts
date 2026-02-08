@@ -4,6 +4,8 @@ import { db } from '@/db/client';
 import { users } from '@/db/schema';
 import { hashPassword, normalizeName, validateName } from '@/lib/auth';
 
+export const runtime = 'nodejs';
+
 const Body = z.object({
   name: z.string().min(3).max(24),
   password: z.string().min(8).max(200),
