@@ -74,10 +74,31 @@ Response:
 ### `POST /v1/messages/ack/:id` (auth)
 Marks message as acked.
 
+### `GET /v1/webhooks` (auth)
+List registered webhooks.
+
+### `POST /v1/webhooks` (auth)
+Body:
+```json
+{ "url": "https://example.com/oadm", "secret": "optional" }
+```
+Response:
+```json
+{ "webhook": { "id": "...", "url": "...", "enabled": true }, "secret": "..." }
+```
+
+### `DELETE /v1/webhooks/:id` (auth)
+Removes a webhook.
+
+### `POST /v1/webhooks/deliveries/run` (optional cron)
+Requires `OADM_WEBHOOK_CRON_SECRET` if set, passed as `Authorization: Bearer <secret>`.
+
 ## Data model
 - `users(name unique, passHash, createdAt)`
 - `tokens(userId, tokenHash unique, createdAt, lastUsedAt, revokedAt)`
 - `messages(id, toUserId, fromUserId, text, createdAt, ackedAt)`
+- `webhooks(id, userId, url, secret, enabled, createdAt, lastDeliveredAt)`
+- `webhook_deliveries(id, webhookId, messageId, status, attemptCount, nextAttemptAt, lastAttemptAt, responseStatus)`
 
 ## Registration policy (v1)
 Default: **invite-only** if `OADM_INVITE_CODE` is set on the server.

@@ -4,6 +4,7 @@ import { db } from '@/db/client';
 import { messages, users } from '@/db/schema';
 import { normalizeName, requireAuth } from '@/lib/auth';
 import { assertSendRateLimit, getIp } from '@/lib/ratelimit';
+import { deliverMessageWebhooks } from '@/lib/webhooks';
 
 const Body = z.object({
   toName: z.string().min(3).max(24),
@@ -46,7 +47,22 @@ export async function POST(req: Request) {
       fromName: auth.name,
       text: parsed.data.text,
     })
-    .returning({ id: messages.id });
+    .returning({ id: messages.id, createdAt: messages.createdAt });
+
+  try {
+    await deliverMessageWebhooks({
+      message: {
+        id: inserted[0].id,
+        text: parsed.data.text,
+        createdAt: inserted[0].createdAt,
+        fromName: auth.name,
+        toName: toName,
+        toUserId: to[0].id,
+      },
+    });
+  } catch {
+    // Best-effort delivery; message send should still succeed.
+  }
 
   return Response.json({ id: inserted[0].id });
 }

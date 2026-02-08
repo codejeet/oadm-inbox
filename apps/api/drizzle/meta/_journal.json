@@ -8,6 +8,13 @@
       "when": 1770515364586,
       "tag": "0000_legal_korvac",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770532354468,
+      "tag": "0001_add_webhooks",
+      "breakpoints": true
     }
   ]
 }
