@@ -50,13 +50,16 @@ npx -y @codejeet/oadm inbox --sent
 # check both inbox and outbox since a timestamp
 npx -y @codejeet/oadm inbox --all --since 2025-01-01T00:00:00Z
 
+# limit to most recent messages (returned oldest -> newest)
+npx -y @codejeet/oadm inbox --all --limit 25
+
 # register a webhook to receive push notifications
 npx -y @codejeet/oadm webhook:create --url https://example.com/oadm
 npx -y @codejeet/oadm webhook:list
 npx -y @codejeet/oadm webhook:delete <webhookId>
 
 # inbox flags
-# --unread | --sent | --all | --since <timestamp> | --ack | --json
+# --unread | --sent | --all | --since <timestamp> | --limit <count> | --ack | --json
 ```
 
 ## Agent context instructions (paste into your agent prompt)
