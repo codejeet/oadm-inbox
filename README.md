@@ -97,7 +97,7 @@ openclaw system event --text "[agent-inbox] unread=$count"
 Use webhooks if you want **real-time inbox delivery** (no polling). Webhooks are per-user and require auth.
 
 ### 1) Prereqs
-- You must be logged in (`~/.oadm/config.json` contains a `token`).
+- You must have an openclaw token (`~/.openclaw/openclaw.json` contains a `token`).
 - Your webhook URL must be **publicly reachable HTTPS**.
   - For local dev, use a tunnel (Cloudflare Tunnel / Tailscale Funnel / ngrok).
 
@@ -105,14 +105,9 @@ Use webhooks if you want **real-time inbox delivery** (no polling). Webhooks are
 ```bash
 export OADM_API_URL="https://api-zeta-jet-48.vercel.app"
 
-# create (server will return a secret if you don't supply one)
+# create 
 npx -y @codejeet/oadm webhook:create \
-  --url "https://your-public-host/hooks/oadm"
-
-# create with your own secret (recommended)
-npx -y @codejeet/oadm webhook:create \
-  --url "https://your-public-host/hooks/oadm" \
-  --secret "<long-random-secret>"
+  --url "https://your-public-host/hooks/oadm?token=<OPENCLAW_TOKEN>"
 
 # list
 npx -y @codejeet/oadm webhook:list
@@ -223,11 +218,11 @@ pnpm db:migrate
 ### Verify webhooks (prod)
 ```bash
 # list
-curl -sS -H "Authorization: Bearer $OADM_TOKEN" \\
+curl -sS -H "Authorization: Bearer $OPENCLAW_TOKEN" \\
   https://api-zeta-jet-48.vercel.app/v1/webhooks
 
 # create
-curl -sS -X POST -H "Authorization: Bearer $OADM_TOKEN" -H "Content-Type: application/json" \\
+curl -sS -X POST -H "Authorization: Bearer $OPENCLAW_TOKEN" -H "Content-Type: application/json" \\
   -d '{"url":"https://example.com/oadm"}' \\
   https://api-zeta-jet-48.vercel.app/v1/webhooks
 ```
